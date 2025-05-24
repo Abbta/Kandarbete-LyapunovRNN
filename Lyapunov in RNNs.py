@@ -315,7 +315,7 @@ class LyapunovCallback(keras.callbacks.Callback):
 
 
                 # Jacobian method on a few
-                H0 = np.random.rand(1, hidden_dim)
+                H0 = np.zeros((1, hidden_dim))
 
                 x_clean_batch = x_clean[np.newaxis, :, :] # add axis
                 x_clean_batch_noise = x_noise[np.newaxis, :, :]
@@ -427,28 +427,30 @@ def plot_lyapunov_comparison_all(lyap_lists, lyap_jac_lists, labels, train_loss,
 
     # Left axis: Lyapunov exponents
     for i in range(len(labels)):
-        ax1.plot(lyap_lists[i], marker='o', label=f'{labels[i]} (PLE)')
-        ax1.plot(lyap_jac_lists[i], marker='x', linestyle='--', label=f'{labels[i]} (HSLE)')
-        
-    ax1.set_xlabel('Epoch')
-    ax1.set_ylabel(ylabel)
-    ax1.set_title('Lyapunov exponents and loss during training')
+        ax1.plot(lyap_lists[i], marker='o', label=f'{labels[i]} (PLE)', markersize=5, linewidth=1.5)
+        ax1.plot(lyap_jac_lists[i], marker='x', linestyle='--', label=f'{labels[i]} (HSLE)', markersize=5, linewidth=1.5)
+
+    ax1.set_xlabel('Epoch', fontsize=24)
+    ax1.set_ylabel(ylabel, fontsize=24)
+    ax1.set_title('Lyapunov exponents and loss during training', fontsize=26)
+    ax1.tick_params(axis='both', labelsize=22)
     ax1.grid(True)
 
     # Right axis: Training and validation loss
     ax2 = ax1.twinx()
-    ax2.plot(train_loss, color='black', linestyle='-', label='Training loss', alpha=0.3)
-    ax2.plot(val_loss, color='gray', linestyle='-', label='Validation loss', alpha=0.3)
+    ax2.plot(train_loss, color='black', linestyle='-', label='Training loss', alpha=0.3, linewidth=1.5)
+    ax2.plot(val_loss, color='gray', linestyle='-', label='Validation loss', alpha=0.3, linewidth=1.5)
     ax2.set_yscale('log')
-    ax2.set_ylabel('MSE loss (log scale)')
+    ax2.set_ylabel('MSE loss (log scale)', fontsize=24)
+    ax2.tick_params(axis='both', labelsize=22)
 
     # Combine legends
-    lines, labels = ax1.get_legend_handles_labels()
+    lines, labels_ = ax1.get_legend_handles_labels()
     if train_loss is not None or val_loss is not None:
         lines2, labels2 = ax2.get_legend_handles_labels()
         lines += lines2
-        labels += labels2
-    ax1.legend(lines, labels, loc='upper left')
+        labels_ += labels2
+    ax1.legend(lines, labels_, loc='upper left', fontsize=22)
 
     plt.tight_layout()
     plt.show()
@@ -477,30 +479,35 @@ def scatter_plot_predictions(model, X_test, y_test, title_suffix='test set'):
     θ_pred = y_pred[:, 0]
     ω_pred = y_pred[:, 1]
 
-    plt.figure(figsize=(12, 5))
+    plt.figure(figsize=(14, 6))
 
-    # Theta
+    # Theta subplot
     plt.subplot(1, 2, 1)
     plt.scatter(θ_true, θ_pred, alpha=0.5, label='Predictions')
     plt.plot([θ_true.min(), θ_true.max()], [θ_true.min(), θ_true.max()], 'r--', label='Ideal prediction')
-    plt.xlabel('Normalized true θ [rad]')
-    plt.ylabel('Normalized predicted θ [rad]')
-    plt.title(f'Normalized angle prediction (test set)')
+    plt.xlabel('Normalized true θ [rad]', fontsize=24)
+    plt.ylabel('Normalized predicted θ [rad]', fontsize=24)
+    plt.title('Normalized angle prediction (test set)', fontsize=26)
     plt.grid(True)
-    plt.legend(loc='upper left') 
+    plt.legend(loc='upper left', fontsize=22)
+    plt.xticks(fontsize=22)
+    plt.yticks(fontsize=22)
 
-    # Omega
+    # Omega subplot
     plt.subplot(1, 2, 2)
     plt.scatter(ω_true, ω_pred, alpha=0.5, label='Predictions')
     plt.plot([ω_true.min(), ω_true.max()], [ω_true.min(), ω_true.max()], 'r--', label='Ideal prediction')
-    plt.xlabel('Normalized true ω [rad/s]')
-    plt.ylabel('Normalized predicted ω [rad/s]')
-    plt.title(f'Normalized angular velocity prediction (test set)')
+    plt.xlabel('Normalized true ω [rad/s]', fontsize=24)
+    plt.ylabel('Normalized predicted ω [rad/s]', fontsize=24)
+    plt.title('Normalized angular velocity prediction (test set)', fontsize=16)
     plt.grid(True)
-    plt.legend(loc='upper left')  
+    plt.legend(loc='upper left', fontsize=22)
+    plt.xticks(fontsize=22)
+    plt.yticks(fontsize=22)
 
     plt.tight_layout()
     plt.show()
+
 
 def plot_solution_curve():
     """
@@ -509,38 +516,43 @@ def plot_solution_curve():
     t = np.linspace(0, 10, 1000)
 
     if system_type == 'simple':
-        θ1, ω1, θ2, ω2 = solve_pendulum(t, [i/10 for i in y0])
+        θ1, ω1, θ2, ω2 = solve_pendulum(t, [i / 10 for i in y0])
     else:
         θ1, ω1, θ2, ω2 = solve_pendulum(t, y0)
 
-    plt.figure(figsize=(12, 6))
-    
-    # θ₁ and θ₂
+    plt.figure(figsize=(14, 8))
+
+    # θ₁ and θ₂ subplot
     plt.subplot(2, 1, 1)
-    plt.plot(t, θ1, label=r'$\theta_1(t)$')
-    
+    plt.plot(t, θ1, label=r'$\theta_1(t)$', linewidth=1.5)
+
     if system_type == 'double':
-        plt.plot(t, θ2, label=r'$\theta_2(t)$', linestyle='--')
-    
-    plt.ylabel('Angle [rad]')
-    plt.legend(loc='upper left')
+        plt.plot(t, θ2, label=r'$\theta_2(t)$', linestyle='--', linewidth=1.5)
+
+    plt.ylabel('Angle [rad]', fontsize=24)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.legend(loc='upper left', fontsize=22)
     plt.grid(True)
 
-    # ω₁ and ω₂
+    # ω₁ and ω₂ subplot
     plt.subplot(2, 1, 2)
-    plt.plot(t, ω1, label=r'$\omega_1(t)$')
+    plt.plot(t, ω1, label=r'$\omega_1(t)$', linewidth=1.5)
 
     if system_type == 'double':
-        plt.plot(t, ω2, label=r'$\omega_2(t)$', linestyle='--')
+        plt.plot(t, ω2, label=r'$\omega_2(t)$', linestyle='--', linewidth=1.5)
 
-    plt.xlabel('Time [s]')
-    plt.ylabel('Angular velocity [rad/s]')
-    plt.legend(loc='upper left')
+    plt.xlabel('Time [s]', fontsize=24)
+    plt.ylabel('Angular velocity [rad/s]', fontsize=24)
+    plt.xticks(fontsize=22)
+    plt.yticks(fontsize=22)
+    plt.legend(loc='upper left', fontsize=22)
     plt.grid(True)
 
-    plt.suptitle(f'Solutions curve for the {system_type} pendulum')
+    plt.suptitle(f'Solution curves for the {system_type} pendulum', fontsize=26)
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
+
 
 
 
@@ -557,22 +569,28 @@ def plot_predicted_vs_true_lyaps_dual(initials_lyap, lyap_cb, labels=None):
     lyap_pred = [lyaps[-1] for lyaps in lyap_cb.lyap_list_all]
     lyap_jac = [lyaps[-1] for lyaps in lyap_cb.lyap_list_jac_all]
 
-    plt.figure(figsize=(6.5, 6))
+    plt.figure(figsize=(7, 6))
     plt.scatter(initials_lyap, lyap_pred, color='blue', marker='o', label='PLE')
     plt.scatter(initials_lyap, lyap_jac, color='green', marker='x', label='HSLE')
 
     if labels:
         for i, label in enumerate(labels):
-            plt.annotate(label, (initials_lyap[i], lyap_pred[i]), textcoords="offset points", xytext=(5, 5), ha='left', fontsize=9)
-            plt.annotate(label, (initials_lyap[i], lyap_jac[i]), textcoords="offset points", xytext=(5, -10), ha='left', fontsize=9)
+            plt.annotate(label, (initials_lyap[i], lyap_pred[i]), textcoords="offset points",
+                        xytext=(5, 5), ha='left', fontsize=21)
+            plt.annotate(label, (initials_lyap[i], lyap_jac[i]), textcoords="offset points",
+                        xytext=(5, -10), ha='left', fontsize=21)
 
-    plt.xlabel("Physical systems' Lyapunov exponent [s⁻¹]")
-    plt.ylabel('Lyapunov exponent [s⁻¹]')
-    plt.title("Lyapunov exponent vs physical systems' Lyapunov exponent")
+    plt.xlabel("Physical systems' Lyapunov exponent [s⁻¹]", fontsize=24)
+    plt.ylabel('Predicted Lyapunov exponent [s⁻¹]', fontsize=24)
+    plt.title("Model vs. physical Lyapunov exponents", fontsize=26)
+
+    plt.xticks(fontsize=22)
+    plt.yticks(fontsize=22)
     plt.grid(True)
-    plt.legend()
+    plt.legend(fontsize=22)
     plt.tight_layout()
     plt.show()
+
 
 
 
@@ -644,4 +662,3 @@ plot_predicted_vs_true_lyaps_dual(initials_lyaps, lyap_cb, labels) # For the las
 # plot_lyapunov_noise(lyap_cb.lyap_list_jac_all,lyap_cb.lyap_list_jac_noise_all,labels)
 
 # ==================================== END ====================================
-
