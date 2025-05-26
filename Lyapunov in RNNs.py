@@ -1,7 +1,3 @@
-
-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow import keras
@@ -13,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 
 layers = keras.layers
 
+print(tf.config.list_physical_devices('GPU'))
 
 # Configurations for reproducibility
 random.seed(42)
@@ -203,10 +200,10 @@ def calc_LEs(x_batches, h0, RNNlayer, activation_function_prim=lambda x:np.heavi
         for t in range(T):
             #Get next state ht+1 by taking a reccurent step
             xt=x[t]
-            _, ht = RNNcell(xt, ht)
+            xt = tf.cast(tf.reshape(xt, [1, input_size]), tf.float32); ht = tf.cast(tf.reshape(ht, [1, L]), tf.float32); _, ht = RNNcell(xt, ht)
 
             #Get jacobian J
-            Wxh, Whh, b = rnn_layer.get_weights()
+            Wxh, Whh, b = RNNlayer.get_weights()
             # Transpose to match math-style dimensions
             Wxh = Wxh.T  # Now shape (units, input_dim)
             Whh = Whh.T  # Now shape (units, units)
@@ -217,6 +214,7 @@ def calc_LEs(x_batches, h0, RNNlayer, activation_function_prim=lambda x:np.heavi
             cum_lyaps += tf.math.log(tf.math.abs(tf.linalg.diag_part(R[0:k_LE, 0:k_LE])))
         lyaps_batches[batch] = cum_lyaps / T
     return lyaps_batches
+
 
 
 # ---------------------- Data Generation ---------------------- #
@@ -430,9 +428,9 @@ def plot_lyapunov_comparison_all(lyap_lists, lyap_jac_lists, labels, train_loss,
         ax1.plot(lyap_lists[i], marker='o', label=f'{labels[i]} (PLE)', markersize=5, linewidth=1.5)
         ax1.plot(lyap_jac_lists[i], marker='x', linestyle='--', label=f'{labels[i]} (HSLE)', markersize=5, linewidth=1.5)
 
-    ax1.set_xlabel('Epoch', fontsize=24)
-    ax1.set_ylabel(ylabel, fontsize=24)
-    ax1.set_title('Lyapunov exponents and loss during training', fontsize=26)
+    ax1.set_xlabel('Epoch', fontsize=24, fontweight='bold')
+    ax1.set_ylabel(ylabel, fontsize=24, fontweight='bold')
+    ax1.set_title('Lyapunov exponents and loss during training', fontsize=26, fontweight='bold')
     ax1.tick_params(axis='both', labelsize=22)
     ax1.grid(True)
 
@@ -441,7 +439,7 @@ def plot_lyapunov_comparison_all(lyap_lists, lyap_jac_lists, labels, train_loss,
     ax2.plot(train_loss, color='black', linestyle='-', label='Training loss', alpha=0.3, linewidth=1.5)
     ax2.plot(val_loss, color='gray', linestyle='-', label='Validation loss', alpha=0.3, linewidth=1.5)
     ax2.set_yscale('log')
-    ax2.set_ylabel('MSE loss (log scale)', fontsize=24)
+    ax2.set_ylabel('MSE loss (log scale)', fontsize=24, fontweight='bold')
     ax2.tick_params(axis='both', labelsize=22)
 
     # Combine legends
@@ -485,9 +483,9 @@ def scatter_plot_predictions(model, X_test, y_test, title_suffix='test set'):
     plt.subplot(1, 2, 1)
     plt.scatter(θ_true, θ_pred, alpha=0.5, label='Predictions')
     plt.plot([θ_true.min(), θ_true.max()], [θ_true.min(), θ_true.max()], 'r--', label='Ideal prediction')
-    plt.xlabel('Normalized true θ [rad]', fontsize=24)
-    plt.ylabel('Normalized predicted θ [rad]', fontsize=24)
-    plt.title('Normalized angle prediction (test set)', fontsize=26)
+    plt.xlabel('Normalized true θ [rad]', fontsize=24, fontweight='bold')
+    plt.ylabel('Normalized predicted θ [rad]', fontsize=24, fontweight='bold')
+    plt.title('Normalized angle prediction (test set)', fontsize=26, fontweight='bold')
     plt.grid(True)
     plt.legend(loc='upper left', fontsize=22)
     plt.xticks(fontsize=22)
@@ -497,9 +495,9 @@ def scatter_plot_predictions(model, X_test, y_test, title_suffix='test set'):
     plt.subplot(1, 2, 2)
     plt.scatter(ω_true, ω_pred, alpha=0.5, label='Predictions')
     plt.plot([ω_true.min(), ω_true.max()], [ω_true.min(), ω_true.max()], 'r--', label='Ideal prediction')
-    plt.xlabel('Normalized true ω [rad/s]', fontsize=24)
-    plt.ylabel('Normalized predicted ω [rad/s]', fontsize=24)
-    plt.title('Normalized angular velocity prediction (test set)', fontsize=16)
+    plt.xlabel('Normalized true ω [rad/s]', fontsize=24, fontweight='bold')
+    plt.ylabel('Normalized predicted ω [rad/s]', fontsize=24, fontweight='bold')
+    plt.title('Normalized angular velocity prediction (test set)', fontsize=22, fontweight='bold')
     plt.grid(True)
     plt.legend(loc='upper left', fontsize=22)
     plt.xticks(fontsize=22)
@@ -507,7 +505,6 @@ def scatter_plot_predictions(model, X_test, y_test, title_suffix='test set'):
 
     plt.tight_layout()
     plt.show()
-
 
 def plot_solution_curve():
     """
@@ -529,9 +526,9 @@ def plot_solution_curve():
     if system_type == 'double':
         plt.plot(t, θ2, label=r'$\theta_2(t)$', linestyle='--', linewidth=1.5)
 
-    plt.ylabel('Angle [rad]', fontsize=24)
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
+    plt.ylabel('Angle [rad]', fontsize=24, fontweight='bold')
+    plt.xticks(fontsize=22)
+    plt.yticks(fontsize=22)
     plt.legend(loc='upper left', fontsize=22)
     plt.grid(True)
 
@@ -542,14 +539,14 @@ def plot_solution_curve():
     if system_type == 'double':
         plt.plot(t, ω2, label=r'$\omega_2(t)$', linestyle='--', linewidth=1.5)
 
-    plt.xlabel('Time [s]', fontsize=24)
-    plt.ylabel('Angular velocity [rad/s]', fontsize=24)
+    plt.xlabel('Time [s]', fontsize=24, fontweight='bold')
+    plt.ylabel('Angular velocity [rad/s]', fontsize=24, fontweight='bold')
     plt.xticks(fontsize=22)
     plt.yticks(fontsize=22)
     plt.legend(loc='upper left', fontsize=22)
     plt.grid(True)
 
-    plt.suptitle(f'Solution curves for the {system_type} pendulum', fontsize=26)
+    plt.suptitle(f'Solution curves for the {system_type} pendulum', fontsize=26, fontweight='bold')
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
 
@@ -580,9 +577,9 @@ def plot_predicted_vs_true_lyaps_dual(initials_lyap, lyap_cb, labels=None):
             plt.annotate(label, (initials_lyap[i], lyap_jac[i]), textcoords="offset points",
                         xytext=(5, -10), ha='left', fontsize=21)
 
-    plt.xlabel("Physical systems' Lyapunov exponent [s⁻¹]", fontsize=24)
-    plt.ylabel('Predicted Lyapunov exponent [s⁻¹]', fontsize=24)
-    plt.title("Model vs. physical Lyapunov exponents", fontsize=26)
+    plt.xlabel("Physical systems' Lyapunov exponent [s⁻¹]", fontsize=24, fontweight='bold')
+    plt.ylabel('Predicted Lyapunov exponent [s⁻¹]', fontsize=24, fontweight='bold')
+    plt.title("Model vs. physical Lyapunov exponents", fontsize=26, fontweight='bold')
 
     plt.xticks(fontsize=22)
     plt.yticks(fontsize=22)
